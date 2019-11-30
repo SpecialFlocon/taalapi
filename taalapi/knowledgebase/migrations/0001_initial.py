@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import lidwoorden.validators
+import knowledgebase.validators
 
 
 class Migration(migrations.Migration):
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             name='Lidwoord',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('value', models.CharField(max_length=3, unique=True, validators=[lidwoorden.validators.validate_lidwoord])),
+                ('value', models.CharField(max_length=3, unique=True, validators=[knowledgebase.validators.validate_lidwoord])),
             ],
             options={
                 'verbose_name_plural': 'lidwoorden',
@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('value', models.CharField(max_length=256)),
-                ('lidwoord', models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, to='lidwoorden.Lidwoord')),
+                ('lidwoord', models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, to='knowledgebase.Lidwoord')),
             ],
             options={
                 'verbose_name_plural': 'woorden',

@@ -1,6 +1,6 @@
 from django.db import migrations
 
-from lidwoorden.models import Lidwoord
+from knowledgebase.models import Lidwoord
 
 
 def populate_lidwoorden(apps, schema_editor):
@@ -10,7 +10,7 @@ def populate_lidwoorden(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('lidwoorden', '0001_initial'),
+        ('knowledgebase', '0001_initial'),
     ]
 
     operations = [
