@@ -4,20 +4,20 @@ from .validators import validate_lidwoord
 
 
 class Lidwoord(models.Model):
-    value = models.CharField(max_length=3, unique=True, validators=[validate_lidwoord])
+    lidwoord = models.CharField(max_length=3, unique=True, validators=[validate_lidwoord])
 
     class Meta:
         verbose_name_plural = 'lidwoorden'
 
     def __str__(self):
-        return self.value.capitalize()
+        return self.lidwoord.capitalize()
 
 class Woord(models.Model):
     lidwoord = models.ForeignKey(Lidwoord, on_delete=models.DO_NOTHING)
-    value = models.CharField(max_length=256)
+    woord = models.CharField(max_length=256)
 
     class Meta:
         verbose_name_plural = 'woorden'
 
     def __str__(self):
-        return '({}) {}'.format(self.lidwoord.value.capitalize(), self.value)
+        return '({}) {}'.format(self.lidwoord.lidwoord.capitalize(), self.woord)

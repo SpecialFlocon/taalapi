@@ -5,7 +5,7 @@ from knowledgebase.models import Lidwoord
 
 def populate_lidwoorden(apps, schema_editor):
     for lv in ['de', 'het']:
-        Lidwoord(value=lv).save()
+        Lidwoord(lidwoord=lv).save()
 
 class Migration(migrations.Migration):
 
