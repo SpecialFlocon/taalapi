@@ -1,8 +1,10 @@
 from django.db import models
 
+from .validators import validate_lidwoord
+
 
 class Lidwoord(models.Model):
-    value = models.CharField(max_length=3)
+    value = models.CharField(max_length=3, unique=True, validators=[validate_lidwoord])
 
     class Meta:
         verbose_name_plural = 'lidwoorden'
