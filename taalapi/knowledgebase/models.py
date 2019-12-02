@@ -10,7 +10,7 @@ class Lidwoord(models.Model):
         verbose_name_plural = 'lidwoorden'
 
     def __str__(self):
-        return self.lidwoord.capitalize()
+        return self.lidwoord
 
 class Woord(models.Model):
     lidwoord = models.ForeignKey(Lidwoord, on_delete=models.DO_NOTHING)
@@ -20,4 +20,4 @@ class Woord(models.Model):
         verbose_name_plural = 'woorden'
 
     def __str__(self):
-        return '({}) {}'.format(self.lidwoord.lidwoord.capitalize(), self.woord)
+        return '({}) {}'.format(self.lidwoord.lidwoord, self.woord)
