@@ -11,6 +11,8 @@ class LidwoordSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class WoordSerializer(serializers.ModelSerializer):
+    lidwoord_name = serializers.StringRelatedField(many=True, read_only=True, source='lidwoord')
+
     class Meta:
         model = Woord
         fields = '__all__'
