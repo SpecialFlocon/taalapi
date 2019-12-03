@@ -13,11 +13,11 @@ class Lidwoord(models.Model):
         return self.lidwoord
 
 class Woord(models.Model):
-    lidwoord = models.ForeignKey(Lidwoord, on_delete=models.DO_NOTHING)
+    lidwoord = models.ManyToManyField(Lidwoord)
     woord = models.CharField(max_length=256)
 
     class Meta:
         verbose_name_plural = 'woorden'
 
     def __str__(self):
-        return '({}) {}'.format(self.lidwoord.lidwoord, self.woord)
+        return '({}) {}'.format('/'.join(self.lidwoord.values_list('lidwoord', flat=True)), self.woord)
