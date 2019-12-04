@@ -29,6 +29,11 @@ class WoordenlijstHelper(BaseHelper):
     """
     A helper that uses woordenlijst.org to determine
     whether a word is a de-woord of a het-woord.
+
+    Return value: tuple with 3 fields: (error_code, description, accurate)
+    - error_code: 0 -> success, -1 -> server-side error (failed API calls, invalid output), 1 -> client-side error (garbage input)
+    - description: a short descriptive message
+    - accurate: boolean. False if something is fishy (like a plural noun with 'het'). Note: it's best effort (but then again, this whole algo is).
     """
 
     def __init__(self, target_url='https://woordenlijst.org/api-proxy/'):
@@ -51,37 +56,43 @@ class WoordenlijstHelper(BaseHelper):
 
         response = requests.get(self.target_url, params=url_params, headers=req_headers)
         if response.status_code != requests.codes.ok:
-            return (-1, "The HTTP request to woordenlijst.org API has failed.")
+            return (-1, "The HTTP request to woordenlijst.org API has failed.", False)
 
         # The request was successful, but we got an empty response. Weird.
         if not response.text:
-            return (-1, "HTTP request to woordenlijst.org API succeeded, but got empty response.")
+            return (-1, "HTTP request to woordenlijst.org API succeeded, but got empty response.", False)
 
         api_response = None
         try:
             api_response = json.loads(response.text)
         except json.JSONDecodeError:
-            return (-1, "Got invalid JSON from woordenlijst.org API.")
+            return (-1, "Got invalid JSON from woordenlijst.org API.", False)
 
         # Try a path
-        articles = None
+        nouns = None
         try:
-            # Filter out results we're not interested in (i.e. words that aren't nouns), and keep the remaining articles.
+            # Filter out results we're not interested in (i.e. words that aren't nouns)
             results = api_response['_embedded']['exact']
-            articles = [r['gram']['art'].lower() for r in results if r['type'].startswith('NOU')]
+            nouns = [(r['gram']['art'].lower(), r['lemma']) for r in results if r['type'].startswith('NOU')]
         except KeyError:
-            return (-1, "JSON object structure from woordenlijst.org API has changed.")
+            return (-1, "JSON object structure from woordenlijst.org API has changed.", False)
 
         # No results.
-        if not articles:
-            return (1, "Word (probably) doesn't exist.")
+        if not nouns:
+            return (1, "Word (probably) doesn't exist.", False)
         # If there are multiple results, the word may have both de and het as articles.
-        elif len(articles) > 1:
+        elif len(nouns) > 1:
+            articles = [n[0] for n in nouns]
+            # Check if all words obtained from the API are the same as the requested one.
+            # If not, mark result as inaccurate.
+            accurate = all(n[1] == word for n in nouns)
             if 'de/het' in articles or set({'de', 'het'}) == set(articles):
-                return (0, ['de', 'het'])
-        # Only one result, surely it must be the correct article.
+                return (0, ['de', 'het'], accurate)
+        # Only one result, surely it must be the correct article, unless word is different.
         else:
-            return (0, articles)
+            noun = nouns[0]
+            article = noun[0]
+            return (0, [article], noun[1] == word)
 
 class WelkLidwoordHelper(BaseHelper):
     """

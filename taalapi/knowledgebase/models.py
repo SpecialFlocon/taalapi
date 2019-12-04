@@ -15,6 +15,7 @@ class Lidwoord(models.Model):
 class Woord(models.Model):
     lidwoord = models.ManyToManyField(Lidwoord)
     woord = models.CharField(max_length=256)
+    accurate = models.BooleanField(default=True)
 
     class Meta:
         verbose_name_plural = 'woorden'

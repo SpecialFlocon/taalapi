@@ -39,7 +39,7 @@ class WoordenViewSet(viewsets.ModelViewSet):
                 helper_article_list = helper_response[1]
                 article_list = [Lidwoord.objects.get(lidwoord=a).id for a in helper_article_list]
 
-                word = Woord.objects.create(woord=query)
+                word = Woord.objects.create(woord=query, accurate=helper_response[2])
                 word.lidwoord.add(*article_list)
 
                 # Somewhat dirty trick to pick up the newly added word
