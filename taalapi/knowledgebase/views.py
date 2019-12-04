@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .helpers import WelkLidwoordHelper
+from .helpers import WoordenlijstHelper
 from .models import Lidwoord, Woord
 from .serializers import LidwoordSerializer, WoordSerializer
 
@@ -25,7 +25,7 @@ class WoordenViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='search/(?P<query>[a-zA-Z]+)')
     def search(self, request, query):
-        h = WelkLidwoordHelper()
+        h = WoordenlijstHelper()
         matching_words = Woord.objects.filter(woord__contains=query)[:5]
 
         # If no matches were returned, attempt to learn word
