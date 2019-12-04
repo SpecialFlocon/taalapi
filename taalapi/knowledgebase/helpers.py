@@ -1,6 +1,7 @@
 from abc import ABC
 from bs4 import BeautifulSoup
 
+import json
 import requests
 
 
@@ -23,6 +24,64 @@ class BaseHelper(ABC):
         """
 
         pass
+
+class WoordenlijstHelper(BaseHelper):
+    """
+    A helper that uses woordenlijst.org to determine
+    whether a word is a de-woord of a het-woord.
+    """
+
+    def __init__(self, target_url='https://woordenlijst.org/api-proxy/'):
+        super().__init__(target_url)
+
+    def get(self, word):
+        url_params = {'m': 'search', 'searchValue': word, 'tactical': 'true'}
+        req_headers = {
+            'Host': 'woordenlijst.org',
+            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Referer': 'https://woordenlijst.org/',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Cookie': 'has_js=1; showDetails=1',
+            'Cache-Control': 'max-age=0'
+        }
+
+        response = requests.get(self.target_url, params=url_params, headers=req_headers)
+        if response.status_code != requests.codes.ok:
+            return (-1, "The HTTP request to woordenlijst.org API has failed.")
+
+        # The request was successful, but we got an empty response. Weird.
+        if not response.text:
+            return (-1, "HTTP request to woordenlijst.org API succeeded, but got empty response.")
+
+        api_response = None
+        try:
+            api_response = json.loads(response.text)
+        except json.JSONDecodeError:
+            return (-1, "Got invalid JSON from woordenlijst.org API.")
+
+        # Try a path
+        articles = None
+        try:
+            # Filter out results we're not interested in (i.e. words that aren't nouns), and keep the remaining articles.
+            results = api_response['_embedded']['exact']
+            articles = [r['gram']['art'].lower() for r in results if r['type'].startswith('NOU')]
+        except KeyError:
+            return (-1, "JSON object structure from woordenlijst.org API has changed.")
+
+        # No results.
+        if not articles:
+            return (1, "Word (probably) doesn't exist.")
+        # If there are multiple results, the word may have both de and het as articles.
+        elif len(articles) > 1:
+            if 'de/het' in articles or set({'de', 'het'}) == set(articles):
+                return (0, ['de', 'het'])
+        # Only one result, surely it must be the correct article.
+        else:
+            return (0, articles)
 
 class WelkLidwoordHelper(BaseHelper):
     """
