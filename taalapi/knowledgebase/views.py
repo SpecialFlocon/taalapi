@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -44,6 +44,13 @@ class WoordenViewSet(viewsets.ModelViewSet):
 
                 # Somewhat dirty trick to pick up the newly added word
                 matching_words = Woord.objects.filter(id=word.id)
+            # If first value of the tuple is -1 (fetch error), HTML parsing code be faililng, yield server error
+            elif helper_response[0] == -1:
+                data = {'error': helper_response[1]}
+                return Response(data=data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # If first value of the tuple is 1 (word not found), bail out with a 404
+            elif helper_response[0] == 1:
+                return Response(status=status.HTTP_404_NOT_FOUND)
 
         serializer = self.get_serializer(matching_words, many=True)
         return Response(serializer.data)
