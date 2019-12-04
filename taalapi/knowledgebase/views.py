@@ -23,7 +23,7 @@ class WoordenViewSet(viewsets.ModelViewSet):
     queryset = Woord.objects.all()
     serializer_class = WoordSerializer
 
-    @action(detail=False, methods=['get'], url_path='search/(?P<query>[a-z0-9]+)')
+    @action(detail=False, methods=['get'], url_path='search/(?P<query>[a-zA-Z]+)')
     def search(self, request, query):
         h = WelkLidwoordHelper()
         matching_words = Woord.objects.filter(woord__contains=query)[:5]
