@@ -16,6 +16,14 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+SECRET_KEY = os.environ.get('TAALTOOL_API_SECRET_KEY')
+
+DEBUG = 'TAALTOOL_API_DEBUG' in os.environ
+
+_env_allowed_hosts = os.environ.get('TAALTOOL_API_ALLOWED_HOSTS')
+ALLOWED_HOSTS = _env_allowed_hosts.split(',') if _env_allowed_hosts else []
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -39,6 +47,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ]
+}
+
 ROOT_URLCONF = 'taalapi.urls'
 
 TEMPLATES = [
@@ -58,6 +72,19 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'taalapi.wsgi.application'
+
+# Database
+# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.{}'.format(os.environ.get('DATABASE_ENGINE')),
+        'NAME': os.environ.get('DATABASE_NAME'),
+        'USER': os.environ.get('DATABASE_USER'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
+        'PORT': os.environ.get('DATABASE_PORT'),
+    }
+}
 
 
 # Password validation
@@ -97,13 +124,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-
-
-# REST framework configuration
-
-REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
-    ]
-}
