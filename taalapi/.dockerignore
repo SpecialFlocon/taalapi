@@ -1,0 +1,5 @@
+**/__pycache__
+**/*.md
+.env
+db.sqlite3
+Dockerfile
