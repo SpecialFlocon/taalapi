@@ -22,7 +22,7 @@ RUN groupadd -g 500 taalapi && \
     chown taalapi:taalapi /srv/taalapi /var/run/taalapi
 RUN apt-get -y update && \
     apt-get -y install apt-utils && \
-    apt-get -y install libxml2
+    apt-get -y install libpq5 libxml2
 
 USER taalapi
 WORKDIR /srv/taalapi
