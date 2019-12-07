@@ -19,10 +19,9 @@ jobs:
         docker tag taalapi thepib/taalapi:${TAALAPI_VERSION%%.*}
     - name: Push Docker image
       env:
-        REGISTRY_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
       run: |
-        echo $REGISTRY_PASSWORD | docker login -u $REGISTRY_USERNAME --password-stdin
+        echo $REGISTRY_PASSWORD | docker login -u thepib --password-stdin
         docker push thepib/taalapi:${TAALAPI_VERSION}
         docker push thepib/taalapi:${TAALAPI_VERSION%.*}
         docker push thepib/taalapi:${TAALAPI_VERSION%%.*}
