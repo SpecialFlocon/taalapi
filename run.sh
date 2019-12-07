@@ -2,4 +2,4 @@
 
 python3 manage.py migrate
 
-exec uwsgi --ini uwsgi.ini
+exec uwsgi --ini /etc/uwsgi.ini

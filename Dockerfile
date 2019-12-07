@@ -27,7 +27,8 @@ RUN apt-get -y update && \
 USER taalapi
 WORKDIR /srv/taalapi
 
-COPY --chown=taalapi:taalapi . .
+COPY --chown=taalapi:taalapi src/ .
+COPY --chown=taalapi:taalapi uwsgi.ini /etc
 COPY --chown=taalapi:taalapi run.sh /
 COPY --from=0 /home/taalapi/venv /home/taalapi/venv
 
