@@ -81,18 +81,21 @@ class WoordenlijstHelper(BaseHelper):
         if not nouns:
             return (1, "Word (probably) doesn't exist.", False)
         # If there are multiple results, the word may have both de and het as articles.
+        # Or there might be multiple word forms/meanings with the same article.
         elif len(nouns) > 1:
-            articles = [n[0] for n in nouns]
+            articles = {n[0] for n in nouns}
             # Check if all words obtained from the API are the same as the requested one.
             # If not, mark result as inaccurate.
             accurate = all(n[1] == word for n in nouns)
-            if 'de/het' in articles or set({'de', 'het'}) == set(articles):
+            if 'de/het' in articles:
                 return (0, ['de', 'het'], accurate)
+
+            return (0, list(articles), accurate)
+
         # Only one result, surely it must be the correct article, unless word is different.
-        else:
-            noun = nouns[0]
-            article = noun[0]
-            return (0, [article], noun[1] == word)
+        noun = nouns[0]
+        article = noun[0]
+        return (0, [article], noun[1] == word)
 
 class WelkLidwoordHelper(BaseHelper):
     """
