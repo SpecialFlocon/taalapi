@@ -1,4 +1,4 @@
-name: taalapi Docker image CI
+name: taalapi release Docker images
 on:
   push:
     tags:

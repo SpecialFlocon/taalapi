@@ -1,0 +1,22 @@
+name: taalapi development Docker images
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    name: Build and publish taalapi Docker image
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build and tag Docker image
+      run: |
+        docker build -t taalapi .
+        docker tag taalapi thepib/taalapi:latest
+    - name: Push Docker image
+      env:
+        REGISTRY_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+      run: |
+        echo $REGISTRY_PASSWORD | docker login -u $REGISTRY_USERNAME --password-stdin
+        docker push thepib/taalapi:latest
