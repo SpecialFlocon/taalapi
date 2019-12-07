@@ -1,3 +1,4 @@
-# taaltool
+# taalapi
 
-A software collection that aims to make language learning easier.
+The `taalapi` component exposes language knowledge through an HTTP API.
+It is written using [Django](https://www.djangoproject.com/) and [DRF](https://www.django-rest-framework.org/).
