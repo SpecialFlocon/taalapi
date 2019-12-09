@@ -14,7 +14,7 @@ class Lidwoord(models.Model):
 
 class Woord(models.Model):
     lidwoord = models.ManyToManyField(Lidwoord)
-    woord = models.CharField(max_length=256)
+    woord = models.CharField(max_length=256, unique=True)
     accurate = models.BooleanField(default=True)
 
     class Meta:
