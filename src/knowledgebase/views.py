@@ -23,6 +23,15 @@ class WoordenViewSet(viewsets.ModelViewSet):
     queryset = Woord.objects.all()
     serializer_class = WoordSerializer
 
+    @action(detail=False, methods=['get'], url_path='search/(?P<query>[a-zA-Z]+)')
+    def search(self, request, query):
+        w = Woord.objects.filter(woord=query)
+        if not w.exists():
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(w.first())
+        return Response(serializer.data)
+
     @action(detail=False, methods=['get'], url_path='learn/(?P<query>[a-zA-Z]+)')
     def learn(self, request, query):
         # First, query database to see if the word is already there, and return it if it does.
