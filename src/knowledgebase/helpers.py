@@ -87,7 +87,7 @@ class WoordenlijstHelper(BaseHelper):
             # Check if all words obtained from the API are the same as the requested one.
             # If not, mark result as inaccurate.
             accurate = all(n[1] == word for n in nouns)
-            if 'de/het' in articles:
+            if 'de/het' in articles or 'het/de' in articles:
                 return (0, ['de', 'het'], accurate)
 
             return (0, list(articles), accurate)
@@ -95,6 +95,9 @@ class WoordenlijstHelper(BaseHelper):
         # Only one result, surely it must be the correct article, unless word is different.
         noun = nouns[0]
         article = noun[0]
+        if article == 'de/het' or article == 'het/de':
+            return (0, ['de', 'het'], noun[1] == word)
+
         return (0, [article], noun[1] == word)
 
 class WelkLidwoordHelper(BaseHelper):
