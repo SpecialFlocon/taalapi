@@ -2,7 +2,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .helpers import WoordenlijstHelper
+from .helpers import WelkLidwoordHelper, WoordenlijstHelper
 from .models import Lidwoord, Woord
 from .serializers import LidwoordSerializer, WoordSerializer
 
@@ -41,26 +41,29 @@ class WoordenViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
         # Otherwise, attempt to learn word
-        h = WoordenlijstHelper()
-        helper_article_list = []
-        helper_response = h.get(query)
+        helpers = [WoordenlijstHelper(), WelkLidwoordHelper()]
+        helper_response = tuple()
+        for h in helpers:
+            helper_article_list = []
+            helper_response = h.get(query)
 
-        # If first value of the tuple is 0 (no error), extract article(s)
-        # TODO(thepib): do something useful with failure values
-        if helper_response[0] == 0:
-            helper_article_list = helper_response[1]
-            article_list = [Lidwoord.objects.get(lidwoord=a).id for a in helper_article_list]
+            # If first value of the tuple is 0 (no error), extract article(s)
+            # TODO(thepib): do something useful with failure values
+            if helper_response[0] == 0:
+                helper_article_list = helper_response[1]
+                article_list = [Lidwoord.objects.get(lidwoord=a).id for a in helper_article_list]
 
-            word = Woord.objects.create(woord=query, accurate=helper_response[2])
-            word.lidwoord.add(*article_list)
+                word = Woord.objects.create(woord=query, accurate=helper_response[2])
+                word.lidwoord.add(*article_list)
 
-            serializer = self.get_serializer(word)
-            return Response(serializer.data)
-        # If first value of the tuple is -1 (fetch error), HTML parsing code be faililng, yield server error
-        elif helper_response[0] == -1:
+                serializer = self.get_serializer(word)
+                return Response(serializer.data)
+
+        # If first value of the tuple from last helper is -1 (fetch error), HTML parsing code be faililng, yield server error
+        if helper_response[0] == -1:
             data = {'error': helper_response[1]}
             return Response(data=data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        # If first value of the tuple is 1 (word not found), bail out with a 404
+        # If first value of the tuple from last helper is 1 (word not found), bail out with a 404
         elif helper_response[0] == 1:
             return Response(status=status.HTTP_404_NOT_FOUND)
         # Unreachable code

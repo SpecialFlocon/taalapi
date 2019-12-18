@@ -54,7 +54,11 @@ class WoordenlijstHelper(BaseHelper):
             'Cache-Control': 'max-age=0'
         }
 
-        response = requests.get(self.target_url, params=url_params, headers=req_headers)
+        try:
+            response = requests.get(self.target_url, params=url_params, headers=req_headers)
+        except requests.ConnectionError:
+            return (-1, "The HTTP request to woordenlijst.org API has failed.", False)
+
         if response.status_code != requests.codes.ok:
             return (-1, "The HTTP request to woordenlijst.org API has failed.", False)
 
@@ -113,33 +117,44 @@ class WelkLidwoordHelper(BaseHelper):
         query_url = "{}/{}".format(self.target_url, word)
         possible_values = {'obvious': ['De', 'Het'], 'ambiguous': ['Het of de', 'De of het']}
 
-        response = requests.get(query_url)
+        try:
+            response = requests.get(query_url)
+        except requests.ConnectionError:
+            return (-1, "The HTTP request to woordenlijst.org API has failed.", False)
+
+        if response.status_code != requests.codes.ok:
+            return (-1, "The HTTP request to welklidwoord.nl has failed.", False)
+
+        # The request was successful, but we got an empty response. Weird.
+        if not response.text:
+            return (-1, "HTTP request to woordenlijst.org API succeeded, but got empty response.", False)
+
         soup = BeautifulSoup(response.text, "html.parser")
         s = None
 
         try:
             # Path in welklidwoord.nl is #content>h1>span (for now, at least.)
-            s = soup.find(id='content').find('h1').find('span').string
+            content = soup.find(id='content').find('h1')
+            article = content.span.string
+            wl_word = content.span.next_sibling.string.strip()
         except AttributeError:
             # Unsurprisingly, something went wrong while looking for the info we need.
             # That's expected to happen more often than one would think, so we're prepared.
-            return (-1, "Website document structure has changed.")
+            return (-1, "Website document structure has changed.", False)
 
         # Somehow, the document structure was left intact,
         # but we were unable to extract the string?
-        if not s:
-            return (-1, "Expected article, got empty string.")
+        if not article:
+            return (-1, "Expected article, got empty string.", False)
 
         # Try to extract article string from possible values, give up if not possible.
         pv_list = [x for v in possible_values.values() for x in v]
-        if s not in pv_list:
-            return (-1, "Unknown article value obtained from website.")
-
-        raw_article = str(s)
+        if article not in pv_list:
+            return (-1, "Unknown article obtained from website.", False)
 
         # If we've gotten an ambiguous answer (de of het, het of de), word may not exist.
         # Look for clues in the HTML document.
-        if raw_article in possible_values['ambiguous']:
+        if article in possible_values['ambiguous']:
             try:
                 # WelkLidwoord displays a message in #content>h3 tag
                 s = soup.find(id='content').find('h3').string
@@ -148,10 +163,10 @@ class WelkLidwoordHelper(BaseHelper):
             else:
                 # Yep, that's a solid test
                 if 'Helaas' in s:
-                    return (1, "Word (probably) doesn't exist.")
+                    return (1, "Word (probably) doesn't exist.", False)
 
-            article = ['de', 'het']
+            article_list = ['de', 'het']
         else:
-            article = [raw_article.lower()]
+            article_list = [article.lower()]
 
-        return (0, article)
+        return (0, article_list, word == wl_word)
