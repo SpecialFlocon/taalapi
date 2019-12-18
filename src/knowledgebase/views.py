@@ -6,6 +6,8 @@ from .helpers import WelkLidwoordHelper, WoordenlijstHelper
 from .models import Lidwoord, Woord
 from .serializers import LidwoordSerializer, WoordSerializer
 
+import urllib
+
 
 class LidwoordenViewSet(viewsets.ModelViewSet):
     """
@@ -23,19 +25,19 @@ class WoordenViewSet(viewsets.ModelViewSet):
     queryset = Woord.objects.all()
     serializer_class = WoordSerializer
 
-    @action(detail=False, methods=['get'], url_path='search/(?P<query>[a-zA-Z]+)')
+    @action(detail=False, methods=['get'], url_path='search/(?P<query>[\w-]+)')
     def search(self, request, query):
-        w = Woord.objects.filter(woord=query)
+        w = Woord.objects.filter(woord=urllib.parse.unquote(query))
         if not w.exists():
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         serializer = self.get_serializer(w.first())
         return Response(serializer.data)
 
-    @action(detail=False, methods=['get'], url_path='learn/(?P<query>[a-zA-Z]+)')
+    @action(detail=False, methods=['get'], url_path='learn/(?P<query>[\w-]+)')
     def learn(self, request, query):
         # First, query database to see if the word is already there, and return it if it does.
-        w = Woord.objects.filter(woord=query)
+        w = Woord.objects.filter(woord=urllib.parse.unquote(query))
         if w.exists():
             serializer = self.get_serializer(w.first())
             return Response(serializer.data)
