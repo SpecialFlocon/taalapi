@@ -1,3 +1,5 @@
+from django.db.models.functions import Lower
+
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -36,8 +38,15 @@ class WoordenViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='learn/(?P<query>[\w-]+)')
     def learn(self, request, query):
-        # First, query database to see if the word is already there, and return it if it does.
-        w = Woord.objects.filter(woord=urllib.parse.unquote(query))
+        unquoted_query = urllib.parse.unquote(query)
+
+        # First, check that queried word is not an article
+        if unquoted_query.lower() in Lidwoord.objects.values_list(Lower('lidwoord'), flat=True):
+            data = {'error': 'Tried to lookup the article of an article.'}
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        # Second, query database to see if the word is already there, and return it if it does.
+        w = Woord.objects.filter(woord=unquoted_query)
         if w.exists():
             serializer = self.get_serializer(w.first())
             return Response(serializer.data)
